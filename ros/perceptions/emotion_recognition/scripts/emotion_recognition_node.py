@@ -391,11 +391,21 @@ class EmotionRecognitionNode(Node):
             self._current_fused_label = ''
             self._fusion_timer = self.create_timer(self._window_secs, self._fusion_cb)
             self._fuser = MoEFuserLogits(
-                alphas=dict(vision=0.7, audio=0.3),
+                alphas={
+                    "vision": self._w_video, 
+                    "audio": self._w_audio, 
+                    "text": self._w_text
+                },
                 gate_weights=dict(
-                    bias=0.0, w_r=1.0, w_d=0.5, w_q=1.5, w_alpha=0.8, w_avail=1.0 
+                    bias=0.0,
+                    w_r=1.0, 
+                    w_d=0.5, 
+                    w_q=1.5, 
+                    w_alpha=0.8, 
+                    w_avail=1.0 
                 ),
                 gate_temp=1.0,
+                class_count=7
             )
             
             self._save_emotion_log = False  # Set to True to enable logging of emotions with timestamps
