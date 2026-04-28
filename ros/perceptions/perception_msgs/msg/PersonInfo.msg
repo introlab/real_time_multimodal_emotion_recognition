@@ -1,0 +1,3 @@
+string emotion_type
+string fused_emotion_type
+sensor_msgs/Image emotion_recognition_image

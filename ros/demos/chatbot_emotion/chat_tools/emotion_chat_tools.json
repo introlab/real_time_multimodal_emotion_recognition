@@ -1,0 +1,132 @@
+[
+  {
+    "type": "function",
+    "function": {
+      "name": "volume_up",
+      "description": "Increase the robot's speaking volume to help the user hear more clearly. Use if the user seems to have difficulty hearing or requests louder speech.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "integer",
+            "description": "Amount to increase the volume by"
+          }
+        },
+        "required": [
+          "amount"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "strict": true
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "volume_down",
+      "description": "Lower the robot's speaking volume to make the interaction more comfortable. Use if the user seems sensitive to loud sounds or requests a softer voice.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "integer",
+            "description": "Amount to decrease the volume by"
+          }
+        },
+        "required": [
+          "amount"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "strict": true
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "get_current_weather",
+      "description": "Retrieve the current weather at the user's location. Useful for making relevant suggestions (e.g., going for a walk or attending an outdoor event).",
+      "parameters": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "get_local_forecast",
+      "description": "Get the weather forecast for a specific day near the user's location. Use to plan or suggest upcoming outdoor activities.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "relative_day": {
+            "type": "integer",
+            "description": "The day for which to get the forecast (-2 = 2 days ago, -1 = yesterday, 0 = today, 1 = tomorrow, until relative day 7.)",
+            "default": 0
+          }
+        },
+        "required": []
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "get_perceived_objects",
+      "description": "Retrieve a list of objects currently perceived by the robot. Use this to refer to items in the user's environment to support context-aware conversation.",
+      "parameters": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "get_date_and_time",
+      "description": "Get the current date and time. Always call this before suggesting activities to ensure contextual relevance.",
+      "parameters": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "get_activity_data",
+      "description": "Access the user's physical activity data for a previous day. Useful for giving personalized encouragement or suggesting appropriate exercises based on recent effort.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "relative_day": {
+            "type": "integer",
+            "description": "How many previous days to get the activity data (1 = one day ago, 2 = two days ago, etc.)",
+            "default": 1
+          }
+        },
+        "required": []
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "get_activity_schedule",
+      "description": "Retrieve scheduled activities based on the user's interests for a specific day of the week (e.g., 'Lundi', 'Mardi', etc.). Ensure you get the current day and time using get_date_and_time before calling. Make sure it is not too late for the suggested activity. Only suggest activities that match the user's interests.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "relative_day": {
+            "type": "string",
+            "description": "Get activity schedule for the day of the week. (Lundi, Mardi, Mercredi, Jeudi, Vendredi, Samedi, Dimanche)"
+          }
+        },
+        "required": [
+          "relative_day"
+        ]
+      }
+    }
+  }
+]

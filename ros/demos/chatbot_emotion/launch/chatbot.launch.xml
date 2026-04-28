@@ -1,0 +1,93 @@
+<launch>
+    <arg name="language" default="fr"/>  <!-- Options: fr or en -->
+    <arg name="camera_2d_wide_enabled" default="false"/>
+    <arg name="language_model" default="gpt-4.1-mini"/>  <!-- Options: gpt-5-mini, gpt-5.2-chat, gpt-5.1-chat-latest, gpt-5.2-chat, gpt-4.1-mini, qwen2.5:3b, gpt-4o-mini, etc.  -->
+    <arg name="model_type" default="chatgpt"/> <!-- Options: ollama or chatgpt-->
+    <arg name="streaming" default="false"/>
+    <arg name="save_history" default="true"/>
+    <arg name="open_browser" default="false"/>
+    <arg name="fullscreen_face" default="false"/>
+    <arg name="record_session" default="false"/>
+    <arg name="video_output_directory" default="$(env HOME)/.ros/t-top/recordings"/>
+    <arg name="window_secs" default="5"/>
+    <arg name="weight_video" default="0.3"/>
+    <arg name="weight_audio" default="0.3"/>
+    <arg name="weight_text" default="0.4"/>
+
+    <!-- Base robot -->
+    <include file="$(find-pkg-share t_top)/launch/bringup.launch.xml">
+        <arg name="language" value="$(var language)"/>
+        <arg name="camera_2d_wide_enabled" value="$(var camera_2d_wide_enabled)"/>
+        <arg name="slam" value="false"/>
+        <arg name="gender" value="male"/> <!-- male , female -->
+        <arg name="voice_generator_type" value="piper"/> <!-- Options: google or piper -->
+        <arg name="whisper_model" value="small"/> <!-- Options: tiny, base, small, medium -->
+        <arg name="open_browser" value="$(var open_browser)"/>
+        <arg name="fullscreen_face" value="$(var fullscreen_face)"/>
+        <arg name="record_session" value="$(var record_session)"/>
+    </include>
+
+    <!-- Chat Behavior -->
+    <node pkg="chat" exec="chat_node.py" name="chat_node">
+        <param name="language" value="$(var language)"/>
+        <param name="language_model" value="$(var language_model)"/>
+        <param name="model_type" value="$(var model_type)"/>
+        <param name="enable_tools" value="true"/>
+        <param name="tools_config" value="$(find-pkg-share chatbot_emotion)/chat_tools/emotion_chat_tools.json"/>
+        <param name="enable_prompts" value="true"/>
+        <param name="prompts_config" value="$(find-pkg-share chatbot_emotion)/prompts/emotion_experiment_fr.json"/>
+        <param name="streaming" value="$(var streaming)"/>
+        <param name="save_history" value="$(var save_history)"/>
+        <param name="save_history_path" value="~/.ros/chat_history/chat_history.json"/>
+    </node>
+
+    <!-- Perceptions analyzer -->
+    <node pkg="perceptions_analyzer" exec="perceptions_analyzer_node.py" name="perceptions_analyzer_node" output="screen"/>
+
+    <!-- OpenTera Link -->
+    <node pkg="opentera_link" exec="opentera_link_node.py" name="opentera_link_node" output="screen">
+        <param name="client_config" value="/home/introlab/.ros/opentera/client_config.json"/>
+    </node>
+
+    <!-- Chatbot GUI -->
+    <node pkg="chatbot_gui_emotion" exec="chatbot_gui_emotion_node" name="chatbot_gui_emotion_node" output="screen"/>
+
+    <!-- Motivation / HBBA -->
+    <node pkg="chatbot_emotion" exec="chatbot_emotion_node" name="chatbot_emotion_node" output="screen">
+        <param name="record_session" value="$(var record_session)"/>
+        <param name="camera_2d_wide_recording_enabled" value="$(var camera_2d_wide_enabled)"/>
+    </node>
+
+    <!-- Filtering image topic to reduce fps -->
+    <node pkg="hbba_lite" exec="throttling_hbba_filter_node" name="camera_3d_image_throttling_filter" output="screen">
+        <param name="input_topic" value="camera_3d/color/image_raw"/>
+        <param name="output_topic" value="camera_3d/color/image_raw/throttled"/>
+        <param name="state_service" value="camera_3d_image_throttling/filter_state"/>
+    </node>
+
+    <!-- Video Recorder for 3D Camera + Audio -->
+    <node pkg="recorders" exec="video_recorder_node.py" name="video_recorder_camera_3d_node_throttled" output="screen">
+        <param name="output_directory" value="$(var video_output_directory)"/>
+        <param name="filename_prefix" value="camera_3d_"/>
+
+        <param name="video_stream_name" value="camera_3d"/>
+        <param name="video_stream_format" value="rgb8"/>
+        <param name="video_stream_width" value="1280"/>
+        <param name="video_stream_height" value="720"/>
+        <param name="video_stream_framerate" value="5"/>
+        <param name="video_stream_codec" value="h264"/>
+        <param name="video_stream_bitrate" value="2000000"/>
+        <param name="video_stream_delay_s" value="0.35"/>'~'
+
+        <param name="audio_stream_name" value="odas"/>
+        <param name="audio_stream_format" value="signed_16"/>
+        <param name="audio_stream_channel_count" value="1"/>
+        <param name="audio_stream_sampling_frequency" value="16000"/>
+        <param name="audio_stream_codec" value="aac"/>
+
+        <remap from="video_camera_3d" to="camera_3d/color/image_raw/throttled"/>
+        <remap from="audio_odas" to="audio_input_signed_16_16000"/>
+        <remap from="video_recorder/filter_state" to="video_recorder_camera_3d_throttled/filter_state"/>
+    </node>
+
+</launch>
